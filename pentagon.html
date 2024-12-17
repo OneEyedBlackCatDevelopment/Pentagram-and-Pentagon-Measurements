@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pentagram & Pentagon Measurements</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: auto;
+    }
+    body {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pentagram & Pentagon</h1>
+  <label for="input_value">Pentagram Diagonal:</label>
+  <input type="number" id="input_value" value="100">
+  <button onclick="calculateAndDrawPenta()">Draw and Calculate</button>
+  <canvas id="canvas" width="800" height="800"></canvas>
+
+  <script>
+	
+	
+	
+	function calculateAndDrawPenta() {
+		// Get height of the pentagon from input
+		const pentagon_diagonal = parseFloat(document.getElementById('input_value').value);
+
+		if (isNaN(pentagon_diagonal) || pentagon_diagonal <= 0) {
+			alert("Please enter a valid positive number for the height of the pentagon.");
+			return;
+		}
+
+		// Calculate the circumradius of the pentagon
+		const cosPiOver5 = Math.cos(Math.PI / 5); // Precalculate cos(π/5)
+		const sinPiOver5 = Math.sin(Math.PI / 5); // Precalculate sin(π/5)
+
+		const angle_pentagram_peak_beta = 36.0;
+		const angle_pentagram_base_alpha = 72.0;
+		const angle_pentagon = 108.0;
+
+		const degree2rad = Math.PI/180.0;
+
+
+		const pentagon_height = pentagon_diagonal * Math.cos( degree2rad * angle_pentagram_peak_beta/2.0 ); 
+
+		const pentagon_circumscribed_radius = pentagon_height / (1 + cosPiOver5); // Circumradius of the pentagon
+
+		const pentagon_side = 2 * 
+			(pentagon_height * Math.tan( degree2rad * angle_pentagram_peak_beta/2.0 ));
+
+
+		const pentagram_side = pentagon_diagonal;
+
+
+		//a=b⋅tan(α)
+		pentagram_peak_hight = (pentagram_side / 2.0) * 
+			Math.tan( degree2rad * angle_pentagram_peak_beta );
+
+
+		pentagram_peak_length = pentagram_peak_hight / Math.cos( degree2rad * angle_pentagram_peak_beta/2.0 ); 
+
+		pentagon_base_to_inner_pentagon = (pentagon_side / 2.0) * 
+			Math.tan( degree2rad * angle_pentagram_peak_beta );
+			
+	
+		inner_pentagon_height = pentagon_height - pentagram_peak_hight - pentagon_base_to_inner_pentagon;
+		
+		inner_pentagon_side =   2 * 
+			(inner_pentagon_height * Math.tan( degree2rad * angle_pentagram_peak_beta/2.0 ));
+
+				
+
+		// Pass calculations to the draw function
+		drawPenta(pentagon_circumscribed_radius, 
+			pentagon_side, 
+			pentagram_side, 
+			pentagon_height, 
+			pentagram_peak_hight, 
+			pentagram_peak_length, 
+			pentagon_base_to_inner_pentagon,
+			inner_pentagon_height,
+			inner_pentagon_side);
+		}
+
+
+
+	function drawPenta(
+		pentagon_circumscribed_radius, 
+		pentagon_side, 
+		pentagram_side, 
+		pentagon_height, 
+		pentagram_peak_hight,
+		pentagram_peak_length,
+		pentagon_base_to_inner_pentagon,
+		inner_pentagon_height,
+		inner_pentagon_side ) {
+	
+	
+		const canvas = document.getElementById('canvas');
+		const ctx = canvas.getContext('2d');
+
+	
+		
+		// Clear canvas
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		
+		 // Fixed drawing size
+		const drawRadius = 300; // Fixed circumradius for drawing
+		const centerX = canvas.width / 2;
+		const centerY = canvas.height / 2;
+
+		// Draw circle
+		ctx.beginPath();
+		ctx.arc(centerX, centerY, drawRadius, 0, 2 * Math.PI);
+		ctx.strokeStyle = 'blue';
+		ctx.lineWidth = 1;
+		ctx.stroke();
+
+		// Draw pentagon_circumscribed_radius line
+		ctx.beginPath();
+		ctx.moveTo(centerX, centerY); // Center of the circle
+		ctx.lineTo(centerX + drawRadius, centerY); // End point on the circle's edge
+		ctx.strokeStyle = 'blue';
+		ctx.lineWidth = 1;
+		ctx.stroke();
+
+		// Label the pentagon_circumscribed_radius
+		ctx.fillStyle = 'blue';
+		ctx.font = "14px Arial";
+		ctx.fillText(`ro=${pentagon_circumscribed_radius.toFixed(3)}  do=${(2*pentagon_circumscribed_radius).toFixed(3)}`, centerX + drawRadius / 2, centerY - 10);	
+		
+		ctx.fillStyle = 'purple';
+		ctx.fillText(`hi=${inner_pentagon_height.toFixed(3)}`, centerX /1.2, centerY);	
+		
+
+
+
+		
+
+
+
+		// Draw pentagon
+		const pentagonVertices = [];
+			for (let i = 0; i < 5; i++) {
+			const angle = (Math.PI / 2) + (i * 2 * Math.PI / 5);
+			const x = centerX + drawRadius * Math.cos(angle);
+			const y = centerY - drawRadius * Math.sin(angle);
+			pentagonVertices.push({ x, y });
+		}
+
+		ctx.beginPath();
+		for (let i = 0; i < 5; i++) {
+			const start = pentagonVertices[i];
+			const end = pentagonVertices[(i + 1) % 5];
+			ctx.moveTo(start.x, start.y);
+			ctx.lineTo(end.x, end.y);
+
+				// Label only one side of the pentagon
+			if (i === 0) {
+			  const midX = (start.x + end.x) / 2.5;
+			  const midY = (start.y + end.y) / 2;
+			  ctx.fillStyle = 'red';
+			  ctx.font = "14px Arial";
+			  ctx.fillText(`s=${pentagon_side.toFixed(3)}`, midX, midY);
+			}
+		}
+		ctx.strokeStyle = 'red';
+		ctx.lineWidth = 1;
+		ctx.stroke();
+
+
+		// Draw pentagram
+		ctx.beginPath();
+		for (let i = 0; i < 5; i++) {
+			const start = pentagonVertices[i];
+			const end = pentagonVertices[(i + 2) % 5];
+			ctx.moveTo(start.x, start.y);
+			ctx.lineTo(end.x, end.y);
+
+			// Label only one side of the pentagram
+			if (i === 0) {
+			  const midX = (start.x + end.x) / 2.5;
+			  const midY = (start.y + end.y) / 2.5;
+			  ctx.fillStyle = 'green';
+			  ctx.font = "14px Arial";
+			  ctx.fillText(`d=${pentagram_side.toFixed(3)}`, midX, midY);
+			  ctx.fillText(`½d=${(pentagram_side/2.0).toFixed(3)}`, (start.x + end.x) / 1.2, midY);
+			  
+			  ctx.fillStyle = 'red';
+			  ctx.fillText(`si=${inner_pentagon_side.toFixed(3)}`, centerX *1.2, centerY/1.2);	
+			  ctx.fillText(`½si=${(inner_pentagon_side/2.0).toFixed(3)}`, centerX *1.2, centerY/1.1);	
+			  
+			}
+		}
+		
+		
+
+		
+		
+		ctx.strokeStyle = 'green';
+		ctx.lineWidth = 1;
+		ctx.stroke();
+
+		// Draw and label height of pentagram
+		const tipVertex = pentagonVertices[0];
+		const baseMidpointX = (pentagonVertices[2].x + pentagonVertices[3].x) / 2;
+		const baseMidpointY = (pentagonVertices[2].y + pentagonVertices[3].y) / 2;
+
+		ctx.beginPath();
+		ctx.moveTo(tipVertex.x, tipVertex.y);
+		ctx.lineTo(baseMidpointX, baseMidpointY);
+		ctx.strokeStyle = 'purple';
+		ctx.lineWidth = 1;
+		ctx.stroke();
+
+		ctx.fillStyle = 'purple';
+		ctx.font = "14px Arial";
+		ctx.fillText(`h=${pentagon_height.toFixed(3)}`, (tipVertex.x + baseMidpointX) / 2, (tipVertex.y + baseMidpointY) / 2);
+		
+		ctx.fillText(`ri=${(pentagon_height-pentagon_circumscribed_radius).toFixed(3)}`, (tipVertex.x + baseMidpointX) / 2, (tipVertex.y + baseMidpointY) / 1.5);
+		
+		
+		ctx.fillText(`ph=${(pentagram_peak_hight).toFixed(3)}`, (tipVertex.x + baseMidpointX) / 2, (tipVertex.y + baseMidpointY) / 3);
+			
+		
+		ctx.fillText(`pb2ip=${(pentagon_base_to_inner_pentagon).toFixed(3)}`, (tipVertex.x + baseMidpointX) / 2, (tipVertex.y + baseMidpointY) / 1.2);
+		
+		ctx.fillStyle = 'red';
+		ctx.fillText(`½s=${(pentagon_side/2.0).toFixed(3)}`, (tipVertex.x + baseMidpointX) / 2.5, (baseMidpointY + 15) );
+		
+		ctx.fillStyle = 'green';
+		ctx.fillText(`pl=${(pentagram_peak_length).toFixed(3)}`, (tipVertex.x + baseMidpointX) / 1.7, (tipVertex.y + baseMidpointY) / 3);
+	
+		
+		
+		
+		
+    }
+	
+	
+    // Draw default shapes and calculations on load
+    calculateAndDrawPenta();
+
+  </script>
+</body>
+</html>
